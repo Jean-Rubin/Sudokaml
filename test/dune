@@ -1,0 +1,4 @@
+(test
+ (name test_sudoku)
+ (deps (glob_files data/*))
+ (libraries alcotest sudoku))
