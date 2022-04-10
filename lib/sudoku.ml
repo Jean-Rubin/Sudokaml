@@ -1,22 +1,21 @@
 type +'a matrix = 'a list list
 (* The matrix is given by a list of its rows *)
-type choices = char list
+(* type choices = char list *)
 
-type board = {
-  grid : char matrix;
-  box_size : int;
-  cell_vals : choices
-}
+type board = char matrix
+
+let box_size = 2
+let cell_vals = ['1'; '2'; '3'; '4']
 
 let blank chr = (chr = '.')
 
 let equal board1 board2 =
-  List.equal (List.equal ( = )) board1.grid board2.grid
+  List.equal (List.equal ( = )) board1 board2
 
 let print board =
   let print_line line =
     List.iter (fun e -> print_char e; print_char ' ') line in
-  List.iter (fun line -> print_line line; print_newline () ) board.grid;;
+  List.iter (fun line -> print_line line; print_newline () ) board;;
 
 let pp_print ppf board =
   let open Format in
@@ -25,48 +24,31 @@ let pp_print ppf board =
     fprintf ppf "@[<h>%a@]"
       (pp_print_list ~pp_sep:space pp_print_char) line
   in
-  pp_print_list ~pp_sep:pp_force_newline pp_print_line ppf board.grid;;
+  pp_print_list ~pp_sep:pp_force_newline pp_print_line ppf board;;
 
 let read filepath =
   let to_char = List.map (fun s -> String.get s 0) in
   let in_channel = open_in filepath in
-  let read_cell in_channel =
-    try
-      let line = input_line in_channel in
-      let cell_vals = List.init (String.length line) (String.get line) in
-      let _ = input_line in_channel in
-      cell_vals
-    with
-      | e ->
-      close_in in_channel;
-      raise e;
-  in
-  let rec read_grid grid_acc in_channel =
+  let rec read_board in_channel ~board_acc =
   try 
     let line = input_line in_channel in
-    let grid_line = to_char (String.split_on_char ' ' line) in
-    read_grid (grid_line :: grid_acc) in_channel
+    let line_board = to_char (String.split_on_char ' ' line) in
+    read_board in_channel ~board_acc:(line_board :: board_acc)
   with
   | End_of_file ->
     close_in in_channel;
-    List.rev grid_acc
+    List.rev board_acc
   | e ->
     close_in in_channel;
     raise e;
   in 
-  let cell_vals = read_cell in_channel in
-  let grid = read_grid [] in_channel in
-  {
-    grid = grid;
-    box_size = List.length cell_vals |> float_of_int |> sqrt |> int_of_float;
-    cell_vals = cell_vals;
-  }
+  read_board in_channel ~board_acc:[]
 
 let rec nodups = function
   | [] -> true
   | x::xs -> not (List.mem x xs) && nodups xs
 
-let rows grid = grid
+let rows board = board
 
 let rec cols = function
   | [] -> []
@@ -80,23 +62,23 @@ let group_by n lst =
   | x::xs -> aux (k + 1) (x :: acc) acc_total xs
   in aux 0 [] [] lst
 
-let group board lst = group_by board.box_size lst
-let ungroup grid = List.concat grid
+let group lst = group_by box_size lst
+let ungroup board = List.concat board
 
 let boxs board =
-  List.map (group board) board.grid |>
-  group board |>
+  List.map group board |>
+  group |>
   List.map cols |>
   ungroup |>
   List.map ungroup
 
 let correct board = 
-  List.for_all nodups (rows board.grid) &&
-  List.for_all nodups (cols board.grid) &&
+  List.for_all nodups (rows board) &&
+  List.for_all nodups (cols board) &&
   List.for_all nodups (boxs board)
 
-let choose board e = if blank e then board.cell_vals else [e]
-let choices board = List.(map (map (choose board))) board.grid
+let choose e = if blank e then cell_vals else [e]
+let choices board = List.(map (map choose)) board
 
 let rec cp = 
   let outer_concat lst1 lst2 =
@@ -109,12 +91,37 @@ let rec cp =
 
 let matrix_cartesian_product choices = cp (List.map cp choices)
 
+let single = function
+  | [] -> false
+  | [_] -> true
+  | _ -> false
+
+let reduce css = 
+  let fixed css = List.concat (List.filter single css) in
+  let rec delete fs acc = function
+    | [] -> acc
+    | c::cs when List.mem c fs -> delete fs acc cs
+    | c::cs -> delete fs (c::acc) cs
+  in
+  let remove fs cs = 
+    if single cs then cs else delete fs [] cs
+  in
+  List.map (remove (fixed css)) css
+
+let prune_by f matrix_choices =
+  f matrix_choices |>
+  List.map reduce |>
+  f
+
+let prune matrix_choices =
+  matrix_choices |>
+  prune_by rows |>
+  prune_by cols |>
+  prune_by boxs
+
+
 let sudoku board =
   choices board |>
+  prune |>
   matrix_cartesian_product |>
-  List.map (fun grid -> {
-    grid = grid;
-    box_size = board.box_size;
-    cell_vals = board.cell_vals;
-  }) |>
   List.filter correct
