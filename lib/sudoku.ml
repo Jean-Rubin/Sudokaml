@@ -4,8 +4,8 @@ type +'a matrix = 'a list list
 
 type board = char matrix
 
-let box_size = 2
-let cell_vals = ['1'; '2'; '3'; '4']
+let box_size = 3
+let cell_vals = ['1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9']
 
 let blank chr = (chr = '.')
 
@@ -118,7 +118,6 @@ let prune matrix_choices =
   prune_by rows |>
   prune_by cols |>
   prune_by boxs
-
 
 let sudoku board =
   choices board |>
