@@ -1,3 +1,4 @@
 (library
  (name sudoku)
+ (public_name sudokaml)
  (synopsis "Sudoku solver"))
