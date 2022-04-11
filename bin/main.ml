@@ -1,4 +1,5 @@
 open Sudoku
 
 let () =
-  print_endline "Hello main"
+  let board = read "data/board.txt" in
+  List.iter print (sudoku board)
