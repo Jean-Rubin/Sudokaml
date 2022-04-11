@@ -20,7 +20,7 @@ let print board =
 let pp_print ppf board =
   let open Format in
   let space ppf () = fprintf ppf " " in
-  let pp_print_line ppf line = 
+  let pp_print_line ppf line =
     fprintf ppf "@[<h>%a@]"
       (pp_print_list ~pp_sep:space pp_print_char) line
   in
@@ -31,7 +31,7 @@ let read filepath =
   let to_char = List.map (fun s -> String.get s 0) in
   let in_channel = open_in filepath in
   let rec read_board in_channel ~board_acc =
-  try 
+  try
     let line = input_line in_channel in
     let line_board = to_char (String.split_on_char ' ' line) in
     read_board in_channel ~board_acc:(line_board :: board_acc)
@@ -42,7 +42,7 @@ let read filepath =
   | e ->
     close_in in_channel;
     raise e;
-  in 
+  in
   read_board in_channel ~board_acc:[]
 
 let rec nodups = function
@@ -56,7 +56,7 @@ let rec cols = function
   | [xs] -> List.map (fun x -> [x]) xs
   | xs::xss -> List.map2 List.cons xs (cols xss)
 
-let group lst = 
+let group lst =
   let rec aux k acc acc_total = function
   | [] -> List.rev (List.rev acc :: acc_total)
   | lst when k = box_size -> aux 0 [] (List.rev acc :: acc_total) lst
@@ -73,7 +73,7 @@ let boxs board =
     ungroup |>
     List.map ungroup
 
-let correct board = 
+let correct board =
   List.for_all nodups (rows board) &&
   List.for_all nodups (cols board) &&
   List.for_all nodups (boxs board)
@@ -88,13 +88,13 @@ let single = function
 
 let fixed css = List.concat (List.filter single css)
 
-let reduce (css : choices list) : choices list = 
+let reduce (css : choices list) : choices list =
   let rec delete fs acc = function
     | [] -> acc
     | c::cs when List.mem c fs -> delete fs acc cs
     | c::cs -> delete fs (c::acc) cs
   in
-  let remove fs cs = 
+  let remove fs cs =
     if single cs then cs else delete fs [] cs
   in
   List.map (remove (fixed css)) css
@@ -127,7 +127,7 @@ let expand (cm : choices matrix) : choices matrix list =
     | cs::_ as snd when predicate cs -> List.rev fst, snd
     | cs::css -> break predicate (cs::fst) css
   in
-  let min_choice (cm : choices matrix) : int = 
+  let min_choice (cm : choices matrix) : int =
     cm |>
       List.map (List.map List.length) |>
       List.concat |>
@@ -144,7 +144,7 @@ let rec search (cm : choices matrix) : choices matrix list =
   match cm with
   | cm when blocked cm -> []
   | cm when List.for_all (List.for_all single) cm -> [cm]
-  | cm -> 
+  | cm ->
     cm |>
       expand |>
       List.map (fun cm -> search (prune cm)) |>
