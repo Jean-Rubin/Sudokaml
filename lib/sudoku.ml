@@ -12,20 +12,32 @@ let blank chr = (chr = '.')
 let equal board1 board2 =
   List.equal (List.equal ( = )) board1 board2
 
-let print board =
-  let print_line line =
-    List.iter (fun e -> print_char e; print_char ' ') line in
-  List.iter (fun line -> print_line line; print_newline () ) board;;
-
 let pp_print ppf board =
   let open Format in
   let space ppf () = fprintf ppf " " in
-  let pp_print_line ppf line =
-    fprintf ppf "@[<h>%a@]"
-      (pp_print_list ~pp_sep:space pp_print_char) line
+  let vert_bar ppf () = fprintf ppf "|" in
+  let hori_bar ppf () = fprintf ppf "------+-------+------" in
+  let pp_print_group ~pp_sep ~pp_group_sep ~pp_v ppf l =
+    let rec aux count = function
+      | [] -> ()
+      | line when count = 4 ->
+        pp_group_sep ppf ();
+        pp_sep ppf ();
+        aux 1 line
+      | v::vs ->
+        pp_v ppf v;
+        pp_sep ppf ();
+        aux (count + 1) vs
+    in
+    aux 1 l
+  in
+  let pp_print_hori ppf l =
+    pp_print_group ~pp_sep:space ~pp_group_sep:vert_bar ~pp_v:pp_print_char ppf l
   in
   pp_force_newline ppf ();
-  pp_print_list ~pp_sep:pp_force_newline pp_print_line ppf board
+  pp_print_group ~pp_sep:pp_force_newline ~pp_group_sep:hori_bar ~pp_v:pp_print_hori ppf board
+
+let print board = pp_print Format.std_formatter board
 
 let read filepath =
   let to_char = List.map (fun s -> String.get s 0) in
@@ -42,8 +54,7 @@ let read filepath =
   | e ->
     close_in in_channel;
     raise e;
-  in
-  read_board in_channel ~board_acc:[]
+  in read_board in_channel ~board_acc:[]
 
 let rec nodups = function
   | [] -> true
