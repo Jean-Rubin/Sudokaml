@@ -1,5 +1,80 @@
 let sudoku_testable = Alcotest.testable Sudoku.pp_print Sudoku.equal
 
+let test_of_list1 () =
+  let board1_read = Sudoku.read "data/test1.txt" in
+  let board1_of_list = 
+    Sudoku.of_list_exn
+    [['2';'7';'6';'3';'1';'4';'9';'5';'.'];
+     ['8';'.';'4';'9';'6';'2';'7';'1';'3'];
+     ['9';'1';'3';'8';'7';'5';'2';'6';'4'];
+     ['4';'6';'8';'1';'2';'7';'3';'9';'5'];
+     ['5';'9';'7';'4';'3';'8';'6';'2';'1'];
+     ['1';'3';'2';'5';'9';'6';'4';'8';'7'];
+     ['3';'2';'5';'7';'8';'9';'1';'4';'6'];
+     ['6';'4';'1';'2';'5';'3';'8';'7';'9'];
+     ['7';'8';'9';'.';'4';'1';'5';'.';'2']]
+  in
+  Alcotest.(check sudoku_testable) "Parsing file or list produce the same board"
+  board1_read board1_of_list
+
+let test_of_list2 () =
+  let invalid_board = 
+    [['2';'7';'6';'3';'1';'4';'9';'5';'.'];
+     ['8';'.';'4';'9';'6';'2';'7';'1';'3'];
+     ['9';'1';'3';'8';'7';'5';'2';'6';'4'];
+     ['4';'6';'8';'1';'2';'7';'3';'9';'5'];
+     ['5';'9';'7';'4';'3';'8';'6';'2';'1'];
+     ['1';'3';'2';'5';'9';'6';'4';'8';'7'];
+     ['3';'2';'5';'7';'8';'9';'1';'4';'6'];
+     ['7';'8';'9';'.';'4';'1';'5';'.';'2']]
+  in 
+  Alcotest.check_raises "Parsing list with too few rows produce an exception"
+  (Failure "Could not parse list as a board") (fun () -> ignore (Sudoku.of_list_exn invalid_board))
+
+let test_of_list3 () =
+  let invalid_board = 
+    [['2';'7';'6';'3';'1';'4';'9';'5';'.'];
+     ['8';'.';'4';'9';'6';'2';'7';'1';'3'];
+     ['9';'1';'3';'8';'7';'5';'2';'6';'4'];
+     ['4';'6';'8';'1';'2';'7';'3';'9';'5'];
+     ['5';'9';'7';'4';'3';'8';'6';'2';'1'];
+     ['1';'3';'2';'5';'9';'6';'4';'8';'7'];
+     ['3';'2';'5';'7';'8';'9';'1';'4'];
+     ['6';'4';'1';'2';'5';'3';'8';'7';'9'];
+     ['7';'8';'9';'.';'4';'1';'5';'.';'2']]
+  in 
+  Alcotest.check_raises "Parsing list with a row too short produce an exception"
+  (Failure "Could not parse list as a board") (fun () -> ignore (Sudoku.of_list_exn invalid_board))
+
+let test_of_list4 () =
+  let invalid_board = 
+    [['2';'7';'6';'3';'1';'4';'9';'5';'.'];
+     ['8';'.';'4';'9';'6';'2';'7';'1';'3'];
+     ['9';'1';'a';'8';'7';'5';'2';'6';'4'];
+     ['4';'6';'8';'1';'2';'7';'3';'9';'5'];
+     ['5';'9';'7';'4';'3';'8';'6';'2';'1'];
+     ['1';'3';'2';'5';'9';'6';'4';'8';'7'];
+     ['3';'2';'5';'7';'8';'9';'1';'4';'6'];
+     ['6';'4';'1';'2';'5';'3';'8';'7';'9'];
+     ['7';'8';'9';'.';'4';'1';'5';'.';'2']]
+  in 
+  Alcotest.check_raises "Parsing list with invalid characters produce an exception"
+  (Failure "Could not parse list as a board") (fun () -> ignore (Sudoku.of_list_exn invalid_board))
+
+let test_of_list5 () =
+  let impossible_board = 
+    [['2';'7';'6';'3';'1';'.';'9';'.';'.'];
+     ['8';'.';'4';'9';'6';'.';'7';'1';'.'];
+     ['9';'1';'4';'8';'7';'.';'2';'6';'4'];
+     ['4';'.';'8';'1';'2';'.';'3';'.';'5'];
+     ['5';'9';'7';'4';'3';'.';'6';'2';'1'];
+     ['.';'3';'2';'1';'9';'.';'4';'8';'.'];
+     ['3';'.';'5';'7';'8';'.';'1';'4';'6'];
+     ['6';'4';'1';'2';'5';'.';'8';'7';'9'];
+     ['7';'8';'9';'.';'4';'.';'5';'.';'.']]
+  in
+  ignore (Sudoku.of_list_exn impossible_board)
+
 let test_correct1 () =
   let solution1 = Sudoku.read "data/test1_sol.txt" in
   Alcotest.(check bool) "Trivial solution is correct"
@@ -63,6 +138,16 @@ let () =
     [
       ("Testing functions",
       [
+        Alcotest.test_case "Read from file or list" `Quick
+          test_of_list1;
+        Alcotest.test_case "Exception Too few rows" `Quick
+          test_of_list2;
+        Alcotest.test_case "Exception Row is too short" `Quick
+          test_of_list3;
+        Alcotest.test_case "Exception Invalid character" `Quick
+          test_of_list4;
+        Alcotest.test_case "Accept Impossible board" `Quick
+          test_of_list5;
         Alcotest.test_case "Correct Trivial" `Quick
           test_correct1;
         Alcotest.test_case "Correct Very simple" `Quick

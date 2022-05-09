@@ -6,8 +6,14 @@ type board = char matrix
 
 let box_size = 3
 let cell_vals = ['1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9']
-
 let blank chr = (chr = '.')
+
+let check board =
+  let is_ok cell = blank cell || List.mem cell cell_vals in
+  let is_correct_length row = List.length row = box_size * box_size in
+  is_correct_length board &&
+  List.for_all is_correct_length board &&
+  List.for_all (List.for_all is_ok) board
 
 let equal board1 board2 =
   List.equal (List.equal ( = )) board1 board2
@@ -55,6 +61,9 @@ let read filepath =
       close_in in_channel;
       raise e;
   in read_board in_channel ~board_acc:[]
+
+let of_list_exn lst =
+  if check lst then lst else raise (Failure "Could not parse list as a board")
 
 let rec nodups = function
   | [] -> true
