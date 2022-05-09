@@ -21,13 +21,13 @@ let pp_print ppf board =
     let rec aux count = function
       | [] -> ()
       | line when count = 4 ->
-        pp_group_sep ppf ();
-        pp_sep ppf ();
-        aux 1 line
+          pp_group_sep ppf ();
+          pp_sep ppf ();
+          aux 1 line
       | v::vs ->
-        pp_v ppf v;
-        pp_sep ppf ();
-        aux (count + 1) vs
+          pp_v ppf v;
+          pp_sep ppf ();
+          aux (count + 1) vs
     in
     aux 1 l
   in
@@ -49,11 +49,11 @@ let read filepath =
     read_board in_channel ~board_acc:(line_board :: board_acc)
   with
   | End_of_file ->
-    close_in in_channel;
-    List.rev board_acc
+      close_in in_channel;
+      List.rev board_acc
   | e ->
-    close_in in_channel;
-    raise e;
+      close_in in_channel;
+      raise e;
   in read_board in_channel ~board_acc:[]
 
 let rec nodups = function
@@ -77,12 +77,12 @@ let group lst =
 let ungroup board = List.concat board
 
 let boxs board =
-  board |>
-    List.map group |>
-    group |>
-    List.map cols |>
-    ungroup |>
-    List.map ungroup
+  board
+  |> List.map group
+  |> group
+  |> List.map cols
+  |> ungroup
+  |> List.map ungroup
 
 let correct board =
   List.for_all nodups (rows board) &&
@@ -114,10 +114,10 @@ let prune_by f (cm : choices matrix) : choices matrix =
   cm |> f |> List.map reduce |> f
 
 let prune (cm : choices matrix) : choices matrix =
-  cm |>
-    prune_by rows |>
-    prune_by cols |>
-    prune_by boxs
+  cm
+  |> prune_by rows
+  |> prune_by cols
+  |> prune_by boxs
 
 let safe (cm : choices matrix) =
   let nodups_fixed css = nodups (fixed css) in
@@ -139,11 +139,11 @@ let expand (cm : choices matrix) : choices matrix list =
     | cs::css -> break predicate (cs::fst) css
   in
   let min_choice (cm : choices matrix) : int =
-    cm |>
-      List.map (List.map List.length) |>
-      List.concat |>
-      List.filter (( < ) 1) |>
-      List.fold_left min (box_size * box_size + 1)
+    cm 
+    |> List.map (List.map List.length)
+    |> List.concat
+    |> List.filter (( < ) 1)
+    |> List.fold_left min (box_size * box_size + 1)
   in
   let best cs = (List.length cs = min_choice cm) in
   let (rows1, rows2) = break (List.exists best) [] cm in
@@ -156,14 +156,14 @@ let rec search (cm : choices matrix) : choices matrix list =
   | cm when blocked cm -> []
   | cm when List.for_all (List.for_all single) cm -> [cm]
   | cm ->
-    cm |>
-      expand |>
-      List.map (fun cm -> search (prune cm)) |>
-      List.concat
+      cm
+      |> expand
+      |> List.map (fun cm -> search (prune cm))
+      |> List.concat
 
 let sudoku board =
-  board |>
-    choices |>
-    prune |>
-    search |>
-    (List.hd |> List.map |> List.map |> List.map)
+  board
+  |> choices
+  |> prune
+  |> search
+  |> (List.hd |> List.map |> List.map |> List.map)
