@@ -12,7 +12,7 @@ val equal : board -> board -> bool
 (** [read filepath] is a board constructed from [filepath]. *)
 val read : string -> board
 
-(** [of_list list] is a board constructed from [list].
+(** [of_list_exn list] is a board constructed from [list].
     @raise [Failure] if the lst contains invalid characters or has invalid dimensions. *)
 val of_list_exn : char list list -> board
 
