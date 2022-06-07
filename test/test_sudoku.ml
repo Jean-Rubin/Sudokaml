@@ -99,39 +99,39 @@ let test_board1 () =
   let test1 = Sudoku.read "data/test1.txt" in
   let solution1 = Sudoku.read "data/test1_sol.txt" in
   Alcotest.(check sudoku_testable) "Trivial sudoku is solved"
-    solution1 (List.hd (Sudoku.sudoku test1)) 
+    solution1 (List.hd (Sudoku.solve test1)) 
 
 let test_board2 () =
   let test2 = Sudoku.read "data/test2.txt" in
   let solution2 = Sudoku.read "data/test2_sol.txt" in
   Alcotest.(check sudoku_testable) "Very simple sudoku is solved"
-    solution2 (List.hd (Sudoku.sudoku test2)) 
+    solution2 (List.hd (Sudoku.solve test2)) 
 
 let test_board3 () =
   let test3 = Sudoku.read "data/test3.txt" in
   let solution3 = Sudoku.read "data/test3_sol.txt" in
   Alcotest.(check sudoku_testable) "Simple sudoku is solved"
-    (List.hd (Sudoku.sudoku test3)) (solution3)
+    (List.hd (Sudoku.solve test3)) (solution3)
 
 let test_board4 () = 
   let test4 = Sudoku.read "data/test4.txt" in
   let solution41 = Sudoku.read "data/test4_sol1.txt" in
   let solution42 = Sudoku.read "data/test4_sol2.txt" in
   Alcotest.(check bool) "First solution is found"
-    true (List.exists (Sudoku.equal solution41) (Sudoku.sudoku test4));
+    true (List.exists (Sudoku.equal solution41) (Sudoku.solve test4));
   Alcotest.(check bool) "Second solution is found"
-    true (List.exists (Sudoku.equal solution42) (Sudoku.sudoku test4))
+    true (List.exists (Sudoku.equal solution42) (Sudoku.solve test4))
 
 let test_board5 () = 
   let test5 = Sudoku.read "data/test5.txt" in
   Alcotest.(check bool) "No solutions are found"
-    true ((Sudoku.sudoku test5) = [])
+    true ((Sudoku.solve test5) = [])
 
 let test_board6 () =
   let test6 = Sudoku.read "data/test6.txt" in
   let solution6 = Sudoku.read "data/test6_sol.txt" in
   Alcotest.(check sudoku_testable) "Very difficult sudoku is solved"
-    (List.hd (Sudoku.sudoku test6)) (solution6)
+    (List.hd (Sudoku.solve test6)) (solution6)
 
 let () =
   Alcotest.run "Sudoku test functions"

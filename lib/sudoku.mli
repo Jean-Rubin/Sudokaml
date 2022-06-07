@@ -1,7 +1,7 @@
 type board
 
-(** [sudoku board] is the list of all the possible ways to complete [board]. *)
-val sudoku : board -> board list
+(** [solve board] is the list of all the possible ways to complete [board]. *)
+val solve : board -> board list
 
 (** [correct board] tests if [board] has different entries in each row, column and box. *)
 val correct : board -> bool

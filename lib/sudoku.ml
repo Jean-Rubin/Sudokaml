@@ -170,7 +170,7 @@ let rec search (cm : choices matrix) : choices matrix list =
       |> List.map (fun cm -> search (prune cm))
       |> List.concat
 
-let sudoku board =
+let solve board =
   board
   |> choices
   |> prune
